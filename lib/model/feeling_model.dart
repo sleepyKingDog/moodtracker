@@ -1,13 +1,13 @@
 class Feeling {
-  int? id; // Primary Key
+  int? feeling_id; // Primary Key
   int feeling; // Mood value: 1 (good), 0 (neutral), -1 (bad)
   DateTime time; // Timestamp
 
-  Feeling({this.id, required this.feeling, required this.time});
+  Feeling({this.feeling_id, required this.feeling, required this.time});
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'feeling_id': feeling_id,
       'feeling': feeling,
       'time': time.toIso8601String(),
     };
@@ -15,7 +15,7 @@ class Feeling {
 
   factory Feeling.fromMap(Map<String, dynamic> map) {
     return Feeling(
-      id: map['id'],
+      feeling_id: map['feeling_id'],
       feeling: map['feeling'],
       time: DateTime.parse(map['time']),
     );

@@ -8,6 +8,8 @@ class DatabaseHelper {
   static Database? _database;
 
   DatabaseHelper._init();
+  final int _databaseVersion = 2; 
+
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -15,17 +17,32 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
+Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: _databaseVersion, // Make sure this matches the updated version
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // Drop the existing tables
+    await db.execute('DROP TABLE IF EXISTS journals;');
+    await db.execute('DROP TABLE IF EXISTS feelings;');
+
+    // Recreate the updated tables
+    await _createDB(db, newVersion);
+  }
+
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE feelings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        feeling_id INTEGER PRIMARY KEY AUTOINCREMENT,
         feeling INTEGER NOT NULL,
         time TEXT NOT NULL
       )
@@ -33,10 +50,10 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE journals (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        feelingId INTEGER NOT NULL,
+        journal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        feeling_id INTEGER NOT NULL,
         journal TEXT NOT NULL,
-        FOREIGN KEY (feelingId) REFERENCES feelings (id)
+        FOREIGN KEY (feeling_id) REFERENCES feelings (feeling_id)
       )
     ''');
   }
@@ -44,6 +61,7 @@ class DatabaseHelper {
 
   // Method to insert a new Feeling record
   Future<int> insertFeeling(Feeling feeling) async {
+    print ("feeling");
     final db = await database;
     final id = await db.insert('feelings', feeling.toMap());
     return id;
