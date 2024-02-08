@@ -89,7 +89,7 @@ class MoodProvider with ChangeNotifier {
               if (value == -1) return Text('Bad');
               return Text('');
             },
-            reservedSize: 50,
+            reservedSize:60,
           ),
         ),
         bottomTitles: AxisTitles(
