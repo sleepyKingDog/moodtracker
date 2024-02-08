@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'package:intl/intl.dart';
 import 'model/feeling_model.dart'; // Import your Feeling model
 import 'model/journal_model.dart'; // Import your Journal model
 
@@ -9,7 +10,10 @@ class MoodProvider with ChangeNotifier {
   List<Journal> _journals = [];
 
   List<Feeling> get feelings => _feelings;
-  List<Journal> get journals => _journals;
+    List<Journal> get journals {
+    // journals を日付で降順にソート
+    return [..._journals]..sort((a, b) => b.feeling_id.compareTo(a.feeling_id));
+  }
 
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
@@ -35,23 +39,45 @@ class MoodProvider with ChangeNotifier {
 
   // Method to add feeling to the database
   Future<void> addJournal(feelingid, journal) async {
-    await _dbHelper.insertJournal(Journal(feeling_id: feelingid, journal: journal));
+    await _dbHelper
+        .insertJournal(Journal(feeling_id: feelingid, journal: journal));
     await loadFeelings();
+    await loadJournals();
   }
 
   LineChartData getMoodChartData() {
-    List<FlSpot> spots = _feelings.asMap().entries.map((entry) {
-      int index = entry.key;
-      Feeling feeling = entry.value;
-      // For demonstration, we're simply using the index as the x-value
-      double x = index.toDouble();
+    if (_feelings.isEmpty) {
+      // リストが空の場合は、空のグラフデータを返す
+      return LineChartData(
+        lineBarsData: [],
+        titlesData: const FlTitlesData(
+          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+      );
+    }
+    // 基準時間（最新の記録時間）を設定
+    final DateTime endTime = _feelings.last.time; // リストが時間順にソートされていると仮定
+
+    List<FlSpot> spots = _feelings.map((feeling) {
+      // 基準時間（最新）から各記録時間までの経過時間を分で計算
+      final double minutesFromEnd =
+          endTime.difference(feeling.time).inMinutes.toDouble();
+          
+
+      double x = 10080 - minutesFromEnd; // 1週間を10080分として、最新の記録から逆算
       double y = feeling.feeling.toDouble();
       return FlSpot(x, y);
     }).toList();
 
     return LineChartData(
       lineBarsData: [
-        LineChartBarData(spots: spots),
+        LineChartBarData(
+          spots: spots,
+          isCurved: false,
+        ),
       ],
       titlesData: FlTitlesData(
         leftTitles: AxisTitles(
@@ -63,29 +89,77 @@ class MoodProvider with ChangeNotifier {
               if (value == -1) return Text('Bad');
               return Text('');
             },
-            reservedSize: 40,
+            reservedSize: 50,
           ),
         ),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (value, meta) {
-              // Check if the index is within the bounds of the list
-              if (value.toInt() < _feelings.length && value.toInt() >= 0) {
-                final feelingEntry = _feelings[value.toInt()];
-                // Additionally, ensure that the 'time' property is not null
-                if (feelingEntry != null && feelingEntry.time != null) {
-                  return Text(feelingEntry.time.toString().split(' ')[0]);
-                }
+              final double range = 10080; // Total minutes in a week
+              // Assuming feelings are sorted by time, with the last being the most recent
+              final double firstFeelingTime = _feelings.first.time
+                  .difference(_feelings.first.time)
+                  .inMinutes
+                  .toDouble();
+              final double lastFeelingTime = _feelings.last.time
+                  .difference(_feelings.first.time)
+                  .inMinutes
+                  .toDouble();
+
+              final double startLabel = firstFeelingTime;
+              final double endLabel = lastFeelingTime;
+              final double middleLabel = (startLabel + endLabel) / 2;
+
+              // Only show labels for start, middle, and end points
+              if (value == startLabel ||
+                  value == middleLabel ||
+                  value == endLabel) {
+                DateTime date =
+                    _feelings.first.time.add(Duration(minutes: value.toInt()));
+                String formattedDate = DateFormat('MM/dd').format(date);
+                return Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(formattedDate),
+                );
+              } else {
+                return Text('');
               }
-              // Return a default or placeholder widget if conditions are not met
-              return Text('');
             },
-            reservedSize: 30,
+
+            reservedSize: 40,
+          ),
+        ),
+        topTitles: const AxisTitles(
+          // Disable top x-axis titles
+          sideTitles: SideTitles(
+            showTitles: false, // Hide titles on the top x-axis
+          ),
+        ),
+        rightTitles: const AxisTitles(
+          // Disable right y-axis titles
+          sideTitles: SideTitles(
+            showTitles: false, // Hide titles on the right y-axis
           ),
         ),
       ),
-      gridData: FlGridData(show: false),
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: true,
+        getDrawingVerticalLine: (value) {
+          if (value == 0) {
+            // Only draw the horizontal line at y=0
+            return const FlLine(
+              color: Colors.grey,
+              strokeWidth: 1,
+            );
+          }
+          return const FlLine(
+            color: Colors
+                .transparent, // Hide other lines by making them transparent
+          );
+        },
+      ),
       borderData: FlBorderData(show: false),
     );
   }

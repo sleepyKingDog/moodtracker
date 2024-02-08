@@ -16,7 +16,6 @@ class _AddMoodScreenState extends State<AddMoodScreen> {
 
   void _saveMoodAndJournal() async {
     if (_selectedMood != null) {
-      print ("I am happy");
       final moodProvider = Provider.of<MoodProvider>(context, listen: false);
       // Assuming addFeeling now returns the id of the newly inserted feeling record
       final int feelingId =
@@ -26,6 +25,7 @@ class _AddMoodScreenState extends State<AddMoodScreen> {
       if (_journalController.text.isNotEmpty) {
         // Now that we have the feelingId, we can use it directly
         await moodProvider.addJournal(feelingId, _journalController.text);
+        
       }
 
       // After saving, go back to the home screen

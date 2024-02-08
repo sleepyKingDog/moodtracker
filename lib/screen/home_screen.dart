@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: <Widget>[
           Expanded(
+            flex: 1,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: LineChart(
@@ -44,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 Expanded(
+  flex: 2,
             child: Consumer<MoodProvider>(
               builder: (context, moodProvider, child) {
                 return ListView.builder(
