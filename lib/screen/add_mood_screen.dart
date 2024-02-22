@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:moodtracker/mood_provider.dart';
-import 'package:moodtracker/model/feeling_model.dart';
-import 'package:moodtracker/model/journal_model.dart';
+import 'package:mirhyth/mood_provider.dart';
+import 'package:mirhyth/model/feeling_model.dart';
+import 'package:mirhyth/model/journal_model.dart';
 
 
 class AddMoodScreen extends StatefulWidget {

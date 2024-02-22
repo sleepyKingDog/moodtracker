@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'mood_provider.dart'; // Import your MoodProvider
-import 'package:moodtracker/screen/home_screen.dart';
+import 'package:mirhyth/screen/home_screen.dart';
 
 void main() {
   runApp(

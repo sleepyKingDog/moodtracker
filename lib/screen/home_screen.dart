@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:moodtracker/model/journal_model.dart';
+import 'package:mirhyth/model/journal_model.dart';
 import 'package:provider/provider.dart';
-import 'package:moodtracker/mood_provider.dart';
-import 'package:moodtracker/journal_provider.dart';
+import 'package:mirhyth/mood_provider.dart';
+import 'package:mirhyth/journal_provider.dart';
 import './add_mood_screen.dart';
 import 'package:intl/intl.dart';
 
