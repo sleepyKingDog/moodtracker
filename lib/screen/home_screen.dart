@@ -29,7 +29,70 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mood Tracker'),
+        title: const Text('Mood Tracker'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Mood Tracker Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.download),
+              title: const Text('Download Data'),
+              onTap: () async {
+                // Use MoodProvider to export data
+                await Provider.of<MoodProvider>(context, listen: false)
+                    .exportData();
+                // ignore: use_build_context_synchronously
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_forever),
+              title: const Text('Delete All Data'),
+              onTap: () {
+                // Show confirmation dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Confirm'),
+                      content: const Text('This will delete all data. Are you sure?'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Cancel'),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        TextButton(
+                          child: const Text('Delete'),
+                          onPressed: () async {
+                            // Use MoodProvider to delete all data
+                            await Provider.of<MoodProvider>(context,
+                                    listen: false)
+                                .deleteAllData();
+                            Navigator.of(context).pop(); // Dismiss dialog
+                            Navigator.pop(context); // Close the drawer
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -44,8 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-Expanded(
-  flex: 2,
+          Expanded(
+            flex: 2,
             child: Consumer<MoodProvider>(
               builder: (context, moodProvider, child) {
                 return ListView.builder(
@@ -68,7 +131,6 @@ Expanded(
               },
             ),
           ),
-
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -89,5 +151,4 @@ Expanded(
       ),
     );
   }
-  
 }

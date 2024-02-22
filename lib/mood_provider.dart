@@ -45,6 +45,17 @@ class MoodProvider with ChangeNotifier {
     await loadJournals();
   }
 
+    Future<void> exportData() async {
+    await _dbHelper.exportDataToExcel();
+    // Optionally notify listeners if needed
+  }
+
+  Future<void> deleteAllData() async {
+    await _dbHelper.deleteAllData(); // Implement this method in DatabaseHelper
+    // Notify listeners to refresh the UI if necessary
+    notifyListeners();
+  }
+
   LineChartData getMoodChartData() {
     if (_feelings.isEmpty) {
       // リストが空の場合は、空のグラフデータを返す
